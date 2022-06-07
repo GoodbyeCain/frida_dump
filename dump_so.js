@@ -11,7 +11,22 @@ rpc.exports = {
         Memory.protect(ptr(libso.base), libso.size, 'rwx');
         var libso_buffer = ptr(libso.base).readByteArray(libso.size);
         libso.buffer = libso_buffer;
-        return libso_buffer;
+        if(libso.size > 128 * 1024 * 1024) {
+            // var ActivityThread = Java.use("android.app.ActivityThread");
+            // var dir = ActivityThread.currentApplication().getApplicationContext().getFilesDir().getAbsolutePath()
+            var dir = '/sdcard/Download'
+            var path = dir + '/' + so_name
+
+            if(libso_buffer != null) {
+                var file = new File(path, 'w')
+                file.write(libso_buffer)
+                return path
+            }
+        } else {
+            return libso_buffer;
+        }
+
+        return -1
     },
     allmodule: function() {
         return Process.enumerateModules()

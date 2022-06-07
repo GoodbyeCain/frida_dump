@@ -38,6 +38,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         allmodule = script.exports.allmodule()
+        print(script.exports.datapath())
         for module in allmodule:
             print(module["name"])
     else:
@@ -46,16 +47,26 @@ if __name__ == "__main__":
         print(module_info)
         base = module_info["base"]
         size = module_info["size"]
-        module_buffer = script.exports.dumpmodule(origin_so_name)
-        if module_buffer != -1:
-            dump_so_name = origin_so_name + ".dump.so"
-            with open(dump_so_name, "wb") as f:
-                f.write(module_buffer)
-                f.close()
+        result = script.exports.dumpmodule(origin_so_name)
+        if result != -1:
+            if type(result) == type('str'):
+                print(result)
+                os.system("adb pull " + result)
                 arch = script.exports.arch()
+                dump_so_name = origin_so_name
                 fix_so_name = fix_so(arch, origin_so_name, dump_so_name, base, size)
-                
                 print(fix_so_name)
-                os.remove(dump_so_name)
+                os.remove(origin_so_name)
+            else:
+                module_buffer = result
+                dump_so_name = origin_so_name + ".dump.so"
+                with open(dump_so_name, "wb") as f:
+                    f.write(module_buffer)
+                    f.close()
+                    arch = script.exports.arch()
+                    fix_so_name = fix_so(arch, origin_so_name, dump_so_name, base, size)
+                    
+                    print(fix_so_name)
+                    os.remove(dump_so_name)
 
 
